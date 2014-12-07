@@ -10,6 +10,32 @@ var svg = d3.select("#graphdiv").append("svg")
 
 
 d3.json("gtest.json", function(error, json) {
+    // Drap to pan behavior
+    var drag = d3.behavior.drag();
+    var viewBoxX = 0, viewBoxY = 0;
+    drag.on('drag', function() {
+        viewBoxX -= d3.event.dx;
+        viewBoxY -= d3.event.dy;
+        svg.select('g.graph-area')
+            .attr('transform',
+                'translate(' + (-viewBoxX) + ',' + (-viewBoxY) + ')');
+    });
+
+    svg.append('rect')
+      .classed('bg', true)
+      .attr('stroke', 'transparent')
+      .attr('fill', 'transparent')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', width)
+      .attr('height', height)
+      .call(drag);
+
+
+    var graphArea = svg.append('g')
+                    .classed('graph-area', true);
+    // END: Drag to pan behavior
+
     var force = d3.layout.force()
         .size([width, height])
         .nodes(json.nodes)
@@ -19,12 +45,12 @@ d3.json("gtest.json", function(error, json) {
         .charge(-300);
     force.linkDistance(width/3.5);
 
-    var link = svg.selectAll(".link")
+    var link = graphArea.selectAll(".link")
         .data(json.links)
         .enter().append('line')
         .attr('class', 'link');
 
-    var node = svg.selectAll(".node")
+    var node = graphArea.selectAll(".node")
         .data(json.nodes)
         .enter().append('circle')
         .attr('class', 'node')
